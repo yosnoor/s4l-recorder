@@ -5,6 +5,8 @@
     "source.sortMembers": "explicit"
   },
   "chat.tools.terminal.autoApprove": {
-    "git check-ignore": true
+    "git check-ignore": true,
+    "npx tsc": true,
+    "npx expo": true
   }
 }
