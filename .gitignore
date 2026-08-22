@@ -29,14 +29,6 @@ yarn-debug.*
 yarn-error.*
 *.log
 
-# macOS
-.DS_Store
-*.pem
-
-# Windows
-Thumbs.db
-Desktop.ini
-
 # local env files
 .env
 .env.*
@@ -51,6 +43,3 @@ coverage/
 
 example
 
-# generated native folders
-/ios
-/android

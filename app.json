@@ -7,9 +7,6 @@
     "icon": "./assets/images/icon.png",
     "scheme": "s4lrecorder",
     "userInterfaceStyle": "automatic",
-    "ios": {
-      "icon": "./assets/expo.icon"
-    },
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
@@ -19,10 +16,6 @@
       },
       "predictiveBackGestureEnabled": false,
       "package": "com.anonymous.s4lrecorder"
-    },
-    "web": {
-      "output": "static",
-      "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
       "expo-router",
