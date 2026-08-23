@@ -16,4 +16,4 @@ Development uses synthetic values only. Recording filenames must be generated as
 
 ## Platform note
 
-The JavaScript shell targets React Native 0.81 with native stack navigation and declares Android/iOS scripts. Native build folders are intentionally deferred to the environment's React Native CLI initialization step because iOS tooling cannot run on Windows; simulator and emulator launch checks remain required on macOS and Android-capable CI.
+The JavaScript shell targets React Native 0.86 through Expo SDK 57, uses native stack navigation, and declares Android/iOS scripts. Expo Prebuild generates native build folders when a local native build is needed. Simulator and emulator launch checks remain required on macOS and Android-capable CI.

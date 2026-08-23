@@ -18,10 +18,7 @@
  *              RECORDING → RECORDING_RECOVERABLE → RECORDED | DRAFT
  */
 export type InterviewLifecycle =
-  | 'DRAFT'
-  | 'RECORDING'
-  | 'RECORDED'
-  | 'RECORDING_RECOVERABLE';
+  "DRAFT" | "RECORDING" | "RECORDED" | "RECORDING_RECOVERABLE";
 
 // ---------------------------------------------------------------------------
 // Recording persistence lifecycle
@@ -34,10 +31,7 @@ export type InterviewLifecycle =
  *                                              └→ UPLOAD_FAILED → UPLOAD_IN_PROGRESS
  */
 export type RecordingPersistence =
-  | 'LOCAL_ONLY'
-  | 'UPLOAD_IN_PROGRESS'
-  | 'REMOTE_CONFIRMED'
-  | 'UPLOAD_FAILED';
+  "LOCAL_ONLY" | "UPLOAD_IN_PROGRESS" | "REMOTE_CONFIRMED" | "UPLOAD_FAILED";
 
 // ---------------------------------------------------------------------------
 // Delivery lifecycle
@@ -50,10 +44,7 @@ export type RecordingPersistence =
  *                                              └→ TRANSFER_FAILED → TRANSFER_IN_PROGRESS
  */
 export type DeliveryLifecycle =
-  | 'NOT_SENT'
-  | 'TRANSFER_IN_PROGRESS'
-  | 'TRANSFER_CREATED'
-  | 'TRANSFER_FAILED';
+  "NOT_SENT" | "TRANSFER_IN_PROGRESS" | "TRANSFER_CREATED" | "TRANSFER_FAILED";
 
 // ---------------------------------------------------------------------------
 // Interview metadata

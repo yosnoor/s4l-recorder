@@ -7,7 +7,7 @@
  * No React Native imports are permitted here.
  */
 
-import type { Interview } from '../domain/types';
+import type { Interview } from "../domain/types";
 import type {
   AudioRecorder,
   Clock,
@@ -16,7 +16,7 @@ import type {
   RecorderEvent,
   RecorderEventHandler,
   RecorderStatus,
-} from './index';
+} from "./index";
 
 // ---------------------------------------------------------------------------
 // FakeClock
@@ -31,7 +31,7 @@ import type {
 export class FakeClock implements Clock {
   private currentMs: number;
 
-  constructor(initialIso = '2026-01-01T00:00:00.000Z') {
+  constructor(initialIso = "2026-01-01T00:00:00.000Z") {
     this.currentMs = new Date(initialIso).getTime();
   }
 
@@ -64,7 +64,7 @@ export class FakeIdGenerator implements IdGenerator {
   private counter: number;
   private readonly prefix: string;
 
-  constructor(prefix = 'id-', startAt = 1) {
+  constructor(prefix = "id-", startAt = 1) {
     this.prefix = prefix;
     this.counter = startAt;
   }
@@ -117,7 +117,8 @@ export class FakeInterviewRepository implements InterviewRepository {
     const all = Array.from(this.store.values());
     return all.sort(
       (a, b) =>
-        new Date(b.metadata.updatedAt).getTime() - new Date(a.metadata.updatedAt).getTime(),
+        new Date(b.metadata.updatedAt).getTime() -
+        new Date(a.metadata.updatedAt).getTime(),
     );
   }
 
@@ -140,7 +141,7 @@ export class FakeInterviewRepository implements InterviewRepository {
  * drive the recorder into any state without involving platform audio APIs.
  */
 export class FakeAudioRecorder implements AudioRecorder {
-  private _status: RecorderStatus = 'IDLE';
+  private _status: RecorderStatus = "IDLE";
   private _preparedFilename: string | null = null;
   private readonly handlers: RecorderEventHandler[] = [];
 
@@ -154,37 +155,43 @@ export class FakeAudioRecorder implements AudioRecorder {
   async prepare(filename: string): Promise<void> {
     this.calls.push(`prepare:${filename}`);
     this._preparedFilename = filename;
-    this._status = 'PREPARING';
+    this._status = "PREPARING";
   }
 
   async start(): Promise<void> {
-    this.calls.push('start');
+    this.calls.push("start");
     if (!this._preparedFilename) {
-      throw new Error('FakeAudioRecorder: start() called before prepare().');
+      throw new Error("FakeAudioRecorder: start() called before prepare().");
     }
-    this._status = 'RECORDING';
-    this.emit({ type: 'STARTED', filename: this._preparedFilename });
+    this._status = "RECORDING";
+    this.emit({ type: "STARTED", filename: this._preparedFilename });
   }
 
   async pause(): Promise<void> {
-    this.calls.push('pause');
-    this._status = 'PAUSED';
-    this.emit({ type: 'PAUSED' });
+    this.calls.push("pause");
+    this._status = "PAUSED";
+    this.emit({ type: "PAUSED" });
   }
 
   async resume(): Promise<void> {
-    this.calls.push('resume');
-    this._status = 'RECORDING';
-    this.emit({ type: 'RESUMED' });
+    this.calls.push("resume");
+    this._status = "RECORDING";
+    this.emit({ type: "RESUMED" });
   }
 
   async stop(): Promise<void> {
-    this.calls.push('stop');
+    this.calls.push("stop");
     if (!this._preparedFilename) {
-      throw new Error('FakeAudioRecorder: stop() called without a prepared filename.');
+      throw new Error(
+        "FakeAudioRecorder: stop() called without a prepared filename.",
+      );
     }
-    this._status = 'STOPPED';
-    this.emit({ type: 'STOPPED', filename: this._preparedFilename, durationMs: 0 });
+    this._status = "STOPPED";
+    this.emit({
+      type: "STOPPED",
+      filename: this._preparedFilename,
+      durationMs: 0,
+    });
     this._preparedFilename = null;
   }
 

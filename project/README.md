@@ -70,16 +70,16 @@ Native capabilities such as audio recording, filesystem access, device storage, 
 
 ## Delivery Slices
 
-| Slice | Outcome |
-| --- | --- |
-| 0 | Testable React Native project foundation |
-| 1 | Durable interview drafts |
-| 2 | Start and stop a local recording |
-| 3 | Pause, resume, and playback |
-| 4 | Safe replace and delete |
-| 5 | Interruption recovery |
-| 6 | Permission and storage safety |
-| 7 | Local-recording release hardening |
+| Slice | Outcome                                  |
+| ----- | ---------------------------------------- |
+| 0     | Testable React Native project foundation |
+| 1     | Durable interview drafts                 |
+| 2     | Start and stop a local recording         |
+| 3     | Pause, resume, and playback              |
+| 4     | Safe replace and delete                  |
+| 5     | Interruption recovery                    |
+| 6     | Permission and storage safety            |
+| 7     | Local-recording release hardening        |
 
 The detailed work plan is in [Incremental Delivery Task List v0.1.md](Incremental%20Delivery%20Task%20List%20v0.1.md). The product requirements are in [StoriesForLife Recording Product Specification v0.2.md](StoriesForLife%20Recording%20Product%20Specification%20v0.2.md), and the interaction design is in [Initial Product Design v0.1.md](Initial%20Product%20Design%20v0.1.md).
 
@@ -104,4 +104,6 @@ Until those decisions are complete, technical recording work must use synthetic,
 
 ## Project Status
 
-The repository currently contains the product specification, interaction design, incremental delivery plan, and this README. The React Native implementation will be introduced through Slice 0.
+Slice 0 provides the React Native/TypeScript shell: native-stack navigation to an empty `Interviews` screen, pure domain lifecycle rules, and deterministic fakes for platform boundaries. CI-ready local checks are `npm run format`, `npm run lint`, `npm run typecheck`, `npm test`, or the combined `npm run verify`.
+
+Native launch checks still require an Android emulator/device and macOS/Xcode for iOS. They are documented release-validation steps rather than a substitute for the automated checks.

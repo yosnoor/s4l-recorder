@@ -8,7 +8,7 @@
  * No React Native imports are permitted here; ports are plain TypeScript.
  */
 
-import type { Interview } from '../domain/types';
+import type { Interview } from "../domain/types";
 
 // ---------------------------------------------------------------------------
 // Clock
@@ -70,20 +70,15 @@ export interface InterviewRepository {
 
 /** The observable state of the audio recorder. */
 export type RecorderStatus =
-  | 'IDLE'
-  | 'PREPARING'
-  | 'RECORDING'
-  | 'PAUSED'
-  | 'STOPPED'
-  | 'ERROR';
+  "IDLE" | "PREPARING" | "RECORDING" | "PAUSED" | "STOPPED" | "ERROR";
 
 /** Events emitted by the AudioRecorder during a recording session. */
 export type RecorderEvent =
-  | { type: 'STARTED'; filename: string }
-  | { type: 'PAUSED' }
-  | { type: 'RESUMED' }
-  | { type: 'STOPPED'; filename: string; durationMs: number }
-  | { type: 'ERROR'; message: string };
+  | { type: "STARTED"; filename: string }
+  | { type: "PAUSED" }
+  | { type: "RESUMED" }
+  | { type: "STOPPED"; filename: string; durationMs: number }
+  | { type: "ERROR"; message: string };
 
 /** Callback invoked when the recorder emits an event. */
 export type RecorderEventHandler = (event: RecorderEvent) => void;

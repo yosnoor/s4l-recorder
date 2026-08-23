@@ -14,16 +14,16 @@
 
 ## Slice map
 
-| Order | Slice | User-visible outcome | Depends on |
-| --- | --- | --- | --- |
-| 0 | Project foundation | The app launches with a testable mobile shell. | — |
-| 1 | Durable interview drafts | An interviewer can create an interview and find it after restart. | 0 |
-| 2 | Start and stop a local recording | An interviewer can create, stop and find a recorded interview. | 1 |
-| 3 | Pause, resume and playback | An interviewer can confidently manage and review an interview recording. | 2 |
-| 4 | Safe replace and delete | An interviewer can re-record or delete only with explicit confirmation. | 3 |
-| 5 | Interruption recovery | An interviewer can discover and act on interrupted recordings after returning or restarting. | 3 |
-| 6 | Permission and storage safety | The app fails safely when recording cannot start or continue. | 2 |
-| 7 | Local-recording release hardening | The complete first-increment journey is dependable and accessible on both platforms. | 1–6 |
+| Order | Slice                             | User-visible outcome                                                                         | Depends on |
+| ----- | --------------------------------- | -------------------------------------------------------------------------------------------- | ---------- |
+| 0     | Project foundation                | The app launches with a testable mobile shell.                                               | —          |
+| 1     | Durable interview drafts          | An interviewer can create an interview and find it after restart.                            | 0          |
+| 2     | Start and stop a local recording  | An interviewer can create, stop and find a recorded interview.                               | 1          |
+| 3     | Pause, resume and playback        | An interviewer can confidently manage and review an interview recording.                     | 2          |
+| 4     | Safe replace and delete           | An interviewer can re-record or delete only with explicit confirmation.                      | 3          |
+| 5     | Interruption recovery             | An interviewer can discover and act on interrupted recordings after returning or restarting. | 3          |
+| 6     | Permission and storage safety     | The app fails safely when recording cannot start or continue.                                | 2          |
+| 7     | Local-recording release hardening | The complete first-increment journey is dependable and accessible on both platforms.         | 1–6        |
 
 Slices 4, 5 and 6 may proceed in parallel once Slice 3 is stable, provided they do not change each other's persistence contracts.
 
@@ -49,7 +49,7 @@ Slices 4, 5 and 6 may proceed in parallel once Slice 3 is stable, provided they 
 
 ### Slice 0 delivery note
 
-The JavaScript shell, domain tests, lint, type checking and formatting are validated on Windows. The Android debug APK builds successfully with JDK 17, Android SDK tools, NDK 26.3.11579264 and `newArchEnabled=false`. Android emulator/device launch validation remains outstanding because no device is currently attached. Native iOS execution requires macOS/Xcode.
+The JavaScript shell, domain tests, lint, type checking, formatting, and Android/iOS JavaScript bundle exports are validated on Windows. Android emulator/device launch validation remains outstanding because no Android target is available on this machine. Native iOS launch validation requires macOS/Xcode.
 
 ## Slice 1 — Durable interview drafts
 

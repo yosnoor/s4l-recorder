@@ -88,11 +88,11 @@ Use a non-identifying recording filename, for example `recording-847293.m4a`, ra
 
 The app must model these independently; one status field must not conceal their different recovery behaviour.
 
-| Concept | Initial states | Meaning |
-| --- | --- | --- |
-| Interview lifecycle | `DRAFT`, `RECORDING`, `RECORDED` | The interviewer's work on the recording. |
-| Recording persistence | `LOCAL_ONLY`, `UPLOAD_IN_PROGRESS`, `REMOTE_CONFIRMED`, `UPLOAD_FAILED` | Whether a durable remote copy exists. |
-| Delivery lifecycle | `NOT_SENT`, `TRANSFER_IN_PROGRESS`, `TRANSFER_CREATED`, `TRANSFER_FAILED` | Whether a transfer to a recipient has been created. |
+| Concept               | Initial states                                                            | Meaning                                             |
+| --------------------- | ------------------------------------------------------------------------- | --------------------------------------------------- |
+| Interview lifecycle   | `DRAFT`, `RECORDING`, `RECORDED`                                          | The interviewer's work on the recording.            |
+| Recording persistence | `LOCAL_ONLY`, `UPLOAD_IN_PROGRESS`, `REMOTE_CONFIRMED`, `UPLOAD_FAILED`   | Whether a durable remote copy exists.               |
+| Delivery lifecycle    | `NOT_SENT`, `TRANSFER_IN_PROGRESS`, `TRANSFER_CREATED`, `TRANSFER_FAILED` | Whether a transfer to a recipient has been created. |
 
 `RECORDING_RECOVERABLE` is a recording-session condition used after unexpected interruption: a local partial file or session exists and the interviewer can review, retain, delete, or retry recovery. If recovery is impossible, the app must state that plainly and must not imply that a recording exists.
 

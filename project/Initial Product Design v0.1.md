@@ -73,12 +73,12 @@ The empty state includes the same `New interview` action. No search, filters or 
 
 **Fields:**
 
-| Field | Control | Validation |
-| --- | --- | --- |
-| Interviewee name | Single-line text input | Required |
-| Interview date | Native date picker | Required; defaults to today |
-| Interviewer | Single-line text input | Required; may later default from the account |
-| Notes | Multi-line text input | Optional |
+| Field            | Control                | Validation                                   |
+| ---------------- | ---------------------- | -------------------------------------------- |
+| Interviewee name | Single-line text input | Required                                     |
+| Interview date   | Native date picker     | Required; defaults to today                  |
+| Interviewer      | Single-line text input | Required; may later default from the account |
+| Notes            | Multi-line text input  | Optional                                     |
 
 **Primary action:** `Continue to recording`
 
@@ -163,12 +163,12 @@ Never describe an interrupted session as saved unless a playable local file has 
 
 Warnings interrupt recording only when continuing would be unsafe.
 
-| Condition | Message | Safe action |
-| --- | --- | --- |
-| Microphone unavailable | `Microphone access is needed to record.` | `Open settings`, `Back` |
-| Low storage | `There may not be enough space to keep recording safely.` | `Stop and review`, `Back to interviews` |
-| Recording stopped for storage | `Recording stopped to protect the audio already captured.` | `Review recording` |
-| Audio interruption | `Recording was interrupted.` | `Resume recording`, `Stop and review` |
+| Condition                     | Message                                                    | Safe action                             |
+| ----------------------------- | ---------------------------------------------------------- | --------------------------------------- |
+| Microphone unavailable        | `Microphone access is needed to record.`                   | `Open settings`, `Back`                 |
+| Low storage                   | `There may not be enough space to keep recording safely.`  | `Stop and review`, `Back to interviews` |
+| Recording stopped for storage | `Recording stopped to protect the audio already captured.` | `Review recording`                      |
+| Audio interruption            | `Recording was interrupted.`                               | `Resume recording`, `Stop and review`   |
 
 Technical error codes may be logged but are not shown as the principal user message.
 
@@ -176,16 +176,16 @@ Technical error codes may be logged but are not shown as the principal user mess
 
 The interface maps product state to a clear phrase; it does not expose internal lifecycle constants.
 
-| Product state | Visible wording | Available action |
-| --- | --- | --- |
-| Draft | `Ready to record` | Start recording |
-| Recording | `Recording` | Pause or stop |
-| Recording paused | `Paused` | Resume or stop |
-| Recoverable interruption | `Recording needs attention` | Review, retain or delete |
-| Recorded / local only | `Saved on this device only` | Play, re-record or delete |
-| Upload in progress (future) | `Saving securely online…` | View progress |
-| Remote confirmed (future) | `Safely stored online` | Confirm recipient |
-| Transfer created (future) | `Sent` | View transfer details |
+| Product state               | Visible wording             | Available action          |
+| --------------------------- | --------------------------- | ------------------------- |
+| Draft                       | `Ready to record`           | Start recording           |
+| Recording                   | `Recording`                 | Pause or stop             |
+| Recording paused            | `Paused`                    | Resume or stop            |
+| Recoverable interruption    | `Recording needs attention` | Review, retain or delete  |
+| Recorded / local only       | `Saved on this device only` | Play, re-record or delete |
+| Upload in progress (future) | `Saving securely online…`   | View progress             |
+| Remote confirmed (future)   | `Safely stored online`      | Confirm recipient         |
+| Transfer created (future)   | `Sent`                      | View transfer details     |
 
 ## 6. Visual direction
 
