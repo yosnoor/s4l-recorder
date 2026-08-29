@@ -1,13 +1,13 @@
-import { useState, useCallback, useEffect } from "react";
-import { StyleSheet, TextInput, View, Pressable, Alert } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
+import { useState } from "react";
+import { Alert, Pressable, StyleSheet, TextInput, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
 import { Spacing } from "@/constants/theme";
-import { AsyncStorageInterviewRepository } from "@/ports/async-storage-interview-repository";
 import { Interview } from "@/domain/types";
+import { AsyncStorageInterviewRepository } from "@/ports/async-storage-interview-repository";
 
 export default function NewInterviewScreen() {
   const router = useRouter();
@@ -80,6 +80,7 @@ export default function NewInterviewScreen() {
           <TextInput
             style={styles.input}
             placeholder="Interviewee name"
+            accessibilityLabel="Interviewee name"
             value={intervieweeName}
             onChangeText={setIntervieweeName}
           />
@@ -88,6 +89,7 @@ export default function NewInterviewScreen() {
           <TextInput
             style={styles.input}
             placeholder="Interview date"
+            accessibilityLabel="Interview date"
             value={interviewDate}
             onChangeText={setInterviewDate}
           />
@@ -96,6 +98,7 @@ export default function NewInterviewScreen() {
           <TextInput
             style={styles.input}
             placeholder="Interviewer"
+            accessibilityLabel="Interviewer"
             value={interviewer}
             onChangeText={setInterviewer}
           />
@@ -104,6 +107,7 @@ export default function NewInterviewScreen() {
           <TextInput
             style={[styles.input, styles.textArea]}
             placeholder="Notes (optional)"
+            accessibilityLabel="Notes"
             value={notes}
             onChangeText={setNotes}
             multiline
@@ -112,6 +116,7 @@ export default function NewInterviewScreen() {
           <Pressable
             style={({ pressed }) => [styles.saveButton, pressed && styles.buttonPressed]}
             accessibilityRole="button"
+            accessibilityLabel="Save draft"
             onPress={handleSave}
           >
             <ThemedText style={styles.saveLabel}>Save draft</ThemedText>

@@ -1,12 +1,9 @@
-import React from "react";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import NewInterviewScreen from "../../app/new-interview";
-import InterviewsListScreen from "../../app/index";
-import { AsyncStorageInterviewRepository } from "../../ports/async-storage-interview-repository";
-import { Interview } from "../../domain/types";
+import { fireEvent, render, waitFor } from "@testing-library/react-native";
 import { useRouter } from "expo-router";
-import { useInterviews } from "../../hooks/use-interviews";
+import InterviewsListScreen from "../../app/index";
+import NewInterviewScreen from "../../app/new-interview";
+import { AsyncStorageInterviewRepository } from "../../ports/async-storage-interview-repository";
 
 jest.mock("expo-router", () => {
   const React = require("react");
@@ -22,22 +19,24 @@ jest.mock("expo-router", () => {
 jest.mock("../../hooks/use-interviews", () => {
   const React = require("react");
   const { AsyncStorageInterviewRepository } = require("../../ports/async-storage-interview-repository");
-  
+
   return {
     useInterviews: () => {
       const [interviews, setInterviews] = React.useState<any[]>([]);
       const [isLoading, setIsLoading] = React.useState(true);
-      
-      React.useEffect(() => {
+      const refresh = React.useCallback(async () => {
         const repo = new AsyncStorageInterviewRepository();
-        repo.findAll().then((data: any) => {
-          setInterviews(data);
-          setIsLoading(false);
-        });
+        const data = await repo.findAll();
+        setInterviews(data);
+        setIsLoading(false);
       }, []);
-      
-      return { interviews, isLoading };
-    }
+
+      React.useEffect(() => {
+        refresh();
+      }, [refresh]);
+
+      return { interviews, isLoading, refresh };
+    },
   };
 });
 

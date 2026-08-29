@@ -1,6 +1,6 @@
 # StoriesForLife Recording App — Incremental Delivery Task List v0.1
 
-**Status:** In progress — Slice 0 complete; Slice 1 partially implemented and acceptance-verified work remains outstanding.  
+**Status:** In progress — Slice 0 and Slice 1 complete; later recording and recovery slices remain pending.  
 **Inputs:** Product Specification v0.2 and Initial Product Design v0.1  
 **Delivery approach:** Small, demonstrable vertical slices; each slice leaves the app working and adds user-visible value.
 
@@ -64,7 +64,7 @@ The JavaScript shell, domain tests, lint, type checking, formatting, and Android
 - [x] Validate required fields with clear, accessible inline messages.
 - [x] Save the draft before moving to the recording screen.
 - [x] Preserve entered values when the user navigates back; confirm before discarding changed, unsaved form data.
-- [ ] Add screen-reader labels, focus order and Dynamic Type checks for the list and form.
+- [x] Add screen-reader labels, focus order and Dynamic Type checks for the list and form.
 
 ### Acceptance demonstration
 

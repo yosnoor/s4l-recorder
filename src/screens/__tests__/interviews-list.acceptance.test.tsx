@@ -1,7 +1,6 @@
-import React from "react";
-import { render, screen, fireEvent } from "@testing-library/react-native";
-import InterviewsListScreen from "../../app/index"; // Adjust import as necessary when implementing
+import { fireEvent, render, screen, waitFor } from "@testing-library/react-native";
 import { useRouter } from "expo-router";
+import InterviewsListScreen from "../../app/index"; // Adjust import as necessary when implementing
 import { Interview } from "../../domain/types";
 
 // Mock expo-router
@@ -77,23 +76,21 @@ describe("Interviews List Screen Acceptance Tests", () => {
     });
 
     it("displays list of draft rows with correct labels and status", async () => {
-      await render(<InterviewsListScreen />);
-      
-      // Primary label
-      expect(screen.getByText("Jane Doe")).toBeTruthy();
-      
-      // Secondary label (Date & Interviewer)
-      expect(screen.getByText("2026-08-23 • John Smith")).toBeTruthy();
-      
-      // Status text
-      expect(screen.getByText("Ready to record")).toBeTruthy();
+      render(<InterviewsListScreen />);
+
+      await waitFor(() => {
+        expect(screen.getByText("Jane Doe")).toBeTruthy();
+        expect(screen.getByText("2026-08-23 • John Smith")).toBeTruthy();
+        expect(screen.getByText("Ready to record")).toBeTruthy();
+      });
     });
 
     it("has accessible labels and roles on list items", async () => {
-      await render(<InterviewsListScreen />);
-      
-      const listItem = screen.getByRole("button", { name: /Jane Doe, 2026-08-23 • John Smith, Ready to record/i });
-      expect(listItem).toBeTruthy();
+      render(<InterviewsListScreen />);
+
+      await waitFor(() => {
+        expect(screen.getByRole("button", { name: /Jane Doe, 2026-08-23 • John Smith, Ready to record/i })).toBeTruthy();
+      });
     });
   });
 });
