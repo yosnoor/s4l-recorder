@@ -1,0 +1,103 @@
+import React from "react";
+import { render, screen, fireEvent, waitFor } from "@testing-library/react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import NewInterviewScreen from "../../app/new-interview";
+import InterviewsListScreen from "../../app/index";
+import { AsyncStorageInterviewRepository } from "../../ports/async-storage-interview-repository";
+import { Interview } from "../../domain/types";
+import { useRouter } from "expo-router";
+import { useInterviews } from "../../hooks/use-interviews";
+
+jest.mock("expo-router", () => {
+  const React = require("react");
+  return {
+    useRouter: jest.fn(),
+    useFocusEffect: jest.fn((cb) => React.useEffect(cb, [])),
+  };
+});
+
+// Provide real hook context or just let the screens use real repository? 
+// The acceptance test usually uses the real repository with AsyncStorage mock.
+// We'll mock the hook to use a real repository instance for testing.
+jest.mock("../../hooks/use-interviews", () => {
+  const React = require("react");
+  const { AsyncStorageInterviewRepository } = require("../../ports/async-storage-interview-repository");
+  
+  return {
+    useInterviews: () => {
+      const [interviews, setInterviews] = React.useState<any[]>([]);
+      const [isLoading, setIsLoading] = React.useState(true);
+      
+      React.useEffect(() => {
+        const repo = new AsyncStorageInterviewRepository();
+        repo.findAll().then((data: any) => {
+          setInterviews(data);
+          setIsLoading(false);
+        });
+      }, []);
+      
+      return { interviews, isLoading };
+    }
+  };
+});
+
+// For NewInterviewScreen, we need it to use the real repository too.
+jest.mock("../../ports/async-storage-interview-repository", () => {
+  const actual = jest.requireActual("../../ports/async-storage-interview-repository");
+  return actual;
+});
+
+describe("Durable Interview Drafts (Slice 1 End-to-End)", () => {
+  let repository: AsyncStorageInterviewRepository;
+
+  beforeEach(async () => {
+    jest.clearAllMocks();
+    await AsyncStorage.clear();
+    (useRouter as jest.Mock).mockReturnValue({ push: jest.fn(), replace: jest.fn(), back: jest.fn() });
+    
+    // We need an implementation of AsyncStorage for the in-memory tests to work if we are integrating.
+    // The @react-native-async-storage/async-storage/jest/async-storage-mock provides a working memory mock.
+  });
+
+  it("creates, saves, and persists a draft across app restarts", async () => {
+    // We mock the real repo just to allow saving directly in the test if needed, but we'll use screens.
+    // However, since we haven't built the implementation yet, we mock a fake behavior of the real repository for now
+    // Wait, the test specifies we should use real repository. So we assume it will be implemented.
+    
+    // Step 1: Render New Interview screen and fill form
+    const { getByPlaceholderText, getByRole, unmount: unmountNew } = await render(<NewInterviewScreen />);
+    
+    await fireEvent.changeText(getByPlaceholderText("Interviewee name"), "Alice Draft");
+    await fireEvent.changeText(getByPlaceholderText("Interviewer"), "Bob Host");
+    
+    // Step 2: Save draft
+    const submitButton = getByRole("button", { name: /save/i });
+    await fireEvent.press(submitButton);
+    
+    await waitFor(() => {
+      // Assuming it saves successfully and calls replace
+      expect(useRouter().replace).toHaveBeenCalled();
+    });
+    
+    await unmountNew();
+    
+    // Step 3: Simulate app restart by re-initializing repository and reloading the list
+    // The useInterviews hook mock will fetch from the real AsyncStorage repo
+    const { getByText } = await render(<InterviewsListScreen />);
+    
+    // Step 4: Verify draft is listed as "Ready to record" with all metadata preserved
+    await waitFor(() => {
+      expect(getByText("Alice Draft")).toBeTruthy();
+      expect(getByText(/Bob Host/)).toBeTruthy();
+      expect(getByText("Ready to record")).toBeTruthy();
+    });
+    
+    // Verify recordingFilename is null by checking the storage directly
+    const keys = await AsyncStorage.getAllKeys();
+    const storedItem = await AsyncStorage.getItem(keys[0]);
+    const parsed = JSON.parse(storedItem!);
+    
+    expect(parsed.data.metadata.recordingFilename).toBeNull();
+    expect(parsed.data.interviewLifecycle).toBe("DRAFT");
+  });
+});

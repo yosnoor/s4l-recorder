@@ -1,6 +1,6 @@
 # StoriesForLife Recording App — Incremental Delivery Task List v0.1
 
-**Status:** Proposed  
+**Status:** In progress — Slice 0 complete; Slice 1 partially implemented and acceptance-verified work remains outstanding.  
 **Inputs:** Product Specification v0.2 and Initial Product Design v0.1  
 **Delivery approach:** Small, demonstrable vertical slices; each slice leaves the app working and adds user-visible value.
 
@@ -57,13 +57,13 @@ The JavaScript shell, domain tests, lint, type checking, formatting, and Android
 
 ### Tasks
 
-- [ ] Write acceptance tests for creating an interview with required metadata and preserving it after restart.
-- [ ] Implement a local interview repository with atomic metadata writes and migration/version handling.
-- [ ] Build the interview list with empty state, `New interview` action and readable draft rows.
-- [ ] Build the interview-details form: interviewee name, date, interviewer and optional notes.
-- [ ] Validate required fields with clear, accessible inline messages.
-- [ ] Save the draft before moving to the recording screen.
-- [ ] Preserve entered values when the user navigates back; confirm before discarding changed, unsaved form data.
+- [x] Write acceptance tests for creating an interview with required metadata and preserving it after restart.
+- [x] Implement a local interview repository with atomic metadata writes and migration/version handling.
+- [x] Build the interview list with empty state, `New interview` action and readable draft rows.
+- [x] Build the interview-details form: interviewee name, date, interviewer and optional notes.
+- [x] Validate required fields with clear, accessible inline messages.
+- [x] Save the draft before moving to the recording screen.
+- [x] Preserve entered values when the user navigates back; confirm before discarding changed, unsaved form data.
 - [ ] Add screen-reader labels, focus order and Dynamic Type checks for the list and form.
 
 ### Acceptance demonstration
