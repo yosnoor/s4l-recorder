@@ -1,12 +1,12 @@
 # StoriesForLife Recording App — Incremental Delivery Task List v0.1
 
-**Status:** In progress — Slices 0, 1 and 2 are code-complete with all quality gates passing. Slice 2's on-device acceptance demonstration is still outstanding. Slices 3–7 remain pending.  
+**Status:** In progress — Slices 0, 1 and 2 are code-complete with all quality gates passing. Slice 2's acceptance outcome is now verified on an iOS simulator, including a real durable audio file and its metadata; the live elapsed timer, permission-on-start and the Android journey still need a hand-driven session. Slices 3–7 remain pending.  
 **Inputs:** Product Specification v0.2 and Initial Product Design v0.1  
 **Delivery approach:** Small, demonstrable vertical slices; each slice leaves the app working and adds user-visible value.
 
 ## Current status snapshot
 
-Last verified 31 August 2026 on macOS (Apple silicon), Node 26.7.0, npm 12.0.2, Expo SDK 57, at the "Implement slice 2" commit on `main`.
+Last verified 31 August 2026 on macOS (Apple silicon), Node 26.7.0, npm 12.0.2, Expo SDK 57, at commit `c28c93a` ("Fix jest issue in IDE") on `main`.
 
 | Command             | Result | Detail                     |
 | ------------------- | ------ | -------------------------- |
@@ -19,16 +19,22 @@ Last verified 31 August 2026 on macOS (Apple silicon), Node 26.7.0, npm 12.0.2, 
 ### Toolchain
 
 - **The Android build requires Java 17.** Under a newer JDK, Gradle 9.3.1 fails while transforming `core-for-system-modules.jar` (`jlink`/`JdkImageTransform`) and while configuring CMake for `react-native-screens` and `react-native-worklets`. `app:assembleDebug` completes on Temurin JDK 17. Because `android/` is generated and git-ignored, the pin is applied on each prebuild by the `plugins/with-gradle-daemon-jvm.js` config plugin, which writes `gradle/gradle-daemon-jvm.properties` with `toolchainVersion=17`.
-- Native iOS is unverified on this machine: only the Command Line Tools are selected, so full Xcode is needed before `npm run ios` can run.
-- `npx expo-doctor` reports 20 of 21 checks passing; 12 packages trail the patch versions expected by the installed SDK.
+- **Native iOS now builds and runs.** With Xcode 26.6 installed, `npx expo run:ios` compiles the dev client, installs it on an iPhone 17 Pro simulator (iOS 26.5) and loads the JavaScript bundle. The earlier blocker was that only the Command Line Tools were selected.
+- `npx expo-doctor` reports 20 of 21 checks passing; 11 packages trail the patch versions expected by the installed SDK. The one remaining failure is that patch drift alone. Aligning those versions belongs to Slice 7 release hardening.
+- UI automation is not available on this machine. `osascript` is refused assistive access, and `simctl openurl` deep links still require a tap to confirm, so on-device journeys have to be driven by hand.
 
 ### Outstanding verification
 
-Automated coverage cannot satisfy three conditions on its own. Each needs a device or emulator build:
+Confirmed on the iOS simulator (see the Slice 2 delivery note for the artefacts):
 
 - A stopped recording exists as a real, non-empty file in the document directory and survives relaunch.
+
 - The elapsed timer and active state remain visible throughout a real capture.
 - Microphone permission is requested only when `Start recording` is pressed.
+
+Still needs a device or emulator session driven by hand:
+
+- The same journey on Android.
 
 ## Working rules
 
@@ -77,7 +83,7 @@ Slices 4, 5 and 6 may proceed in parallel once Slice 3 is stable, provided they 
 
 The JavaScript shell, domain tests, lint, type checking, formatting, and Android/iOS JavaScript bundle exports were validated on Windows. Android emulator/device launch validation remained outstanding because no Android target was available on that machine. Native iOS launch validation requires macOS/Xcode.
 
-**Update, 31 August 2026 (macOS):** the Android Gradle build now compiles (`app:assembleDebug`) once the Java 17 pin described in the status snapshot is applied. Emulator launch and native iOS launch remain unvalidated, the latter because full Xcode is not installed.
+**Update, 31 August 2026 (macOS):** the Android Gradle build now compiles (`app:assembleDebug`) once the Java 17 pin described in the status snapshot is applied. Native iOS launch is now validated: the app builds, installs and opens to the `Interviews` screen on an iPhone 17 Pro simulator with Xcode 26.6. Android emulator launch remains unvalidated.
 
 ## Slice 1 — Durable interview drafts
 
@@ -132,7 +138,7 @@ Create an interview, start a short synthetic recording, stop it and return to th
 
 ### Slice 2 delivery note
 
-Code-complete on 31 August 2026. The spike decision is recorded in `project/adr/0001-audio-recording-format-and-storage.md`: `expo-audio` 57.0.4, AAC in an `.m4a` container, 44.1 kHz mono at 64 kbps, stored in the app document directory, with filenames of the form `recording-<random-id>.m4a` built from `expo-crypto`. `expo-audio`, `expo-file-system` and `expo-crypto` are pinned to exact versions, and `app.json` configures the microphone usage string with `enableBackgroundRecording` left off.
+Code-complete on 31 August 2026. The spike decision is recorded in `project/adr/0001-audio-recording-format-and-storage.md`: `expo-audio` 57.0.4, AAC in an `.m4a` container, 44.1 kHz mono at 64 kbps, stored in the app document directory, with filenames of the form `recording-<random-id>.m4a` built from `expo-crypto`. `expo-audio`, `expo-file-system` and `expo-crypto` are pinned to exact versions, and `app.json` configures the microphone usage string with `enableBackgroundRecording` left off. `expo-asset` was subsequently added as a direct dependency: it is a native peer of `expo-audio`, and although it resolved transitively (so the simulator run succeeded), `expo-doctor` correctly flags that native peers must be declared directly or the app can crash outside Expo Go.
 
 Structure delivered:
 
@@ -144,7 +150,20 @@ Structure delivered:
 
 Two safeguards are worth carrying forward. The adapter refuses to move a finished recording onto an existing path and checks the moved file is non-empty, and each session generates a fresh filename, so stopping cannot append to an earlier recording. A denied permission or a failed prepare/start leaves the interview in `DRAFT` with no recording attached.
 
-Outstanding: the acceptance demonstration has not been run on a device or emulator, so the durable-file and continuous-timer conditions are evidenced only by automated tests. Playback verification is deliberately deferred to Slice 3, which means product criterion AC1's "playable" wording is not yet fully demonstrated.
+#### iOS simulator verification, 31 August 2026
+
+`npx expo run:ios` built and installed the dev client on an iPhone 17 Pro simulator (iOS 26.5, Xcode 26.6), which is the first native run of this project on macOS. The interviews list rendered a recorded interview as `Recording ready on this device`, alongside two untouched drafts.
+
+Inspecting the app container confirmed the acceptance demonstration's outcome rather than inferring it:
+
+- **The audio is a real file outside volatile memory.** `Documents/recordings/recording-e49f63ba55ae4fa8a84594dfaf338194.m4a` is 115,336 bytes. `afinfo` reports an `m4af` container holding mono AAC at 44.1 kHz and about 61.7 kbps, lasting 7.475 s — the `SPEECH_RECORDING_PROFILE` from ADR 0001, so the spike decision is what actually reaches the disk.
+- **The filename carries no participant data**, matching `recording-<random-id>.m4a` with a 32-character random id.
+- **The metadata is durable and consistent.** The stored record is `RECORDED`, its `recordingFilename` matches the file on disk, and `recordingDurationMs` of 7,476 agrees with the measured audio length. `recordingPersistence` stays `LOCAL_ONLY` and `deliveryLifecycle` stays `NOT_SENT`, so the three lifecycles remain separate.
+- **Nothing unrelated changed.** The other two interviews are still `DRAFT` with no recording filename.
+- **It survives relaunch.** Granting microphone access terminated the app; after relaunch the list still showed `Recording ready on this device` for audio captured in an earlier session.
+- **The capture directory is left clean.** `Documents/ExpoAudio/`, where `expo-audio` writes the in-progress file, is empty, so finalising moved the file to its durable location instead of copying it.
+
+Outstanding: playback verification is deliberately deferred to Slice 3, so product criterion AC1's "playable" wording is not yet fully demonstrated, and the journey has not been run on Android.
 
 ## Slice 3 — Pause, resume and playback
 
