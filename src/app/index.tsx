@@ -87,6 +87,9 @@ export default function InterviewsScreen() {
             keyExtractor={(item) => item.metadata.id}
             renderItem={renderItem}
             contentContainerStyle={styles.listContainer}
+            // Required on iOS so the collapsible large title applies its
+            // content inset; without it rows render beneath the header.
+            contentInsetAdjustmentBehavior="automatic"
           />
         )}
 
