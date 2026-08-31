@@ -1,6 +1,6 @@
-import { useState, useEffect, useCallback } from 'react';
-import { AsyncStorageInterviewRepository } from '../ports/async-storage-interview-repository';
-import { Interview } from '../domain/types';
+import { useCallback, useState } from "react";
+import { Interview } from "../domain/types";
+import { AsyncStorageInterviewRepository } from "../ports/async-storage-interview-repository";
 
 const repository = new AsyncStorageInterviewRepository();
 
@@ -20,10 +20,7 @@ export const useInterviews = () => {
     }
   }, []);
 
-  useEffect(() => {
-    refresh();
-  }, [refresh]);
-
+  // Screens refresh on focus, which also covers the initial mount.
   return { interviews, isLoading, refresh };
 };
 

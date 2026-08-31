@@ -64,6 +64,12 @@ export interface InterviewMetadata {
   readonly interviewer: string;
   readonly notes: string;
   readonly recordingFilename: string | null;
+  /**
+   * Captured length of the finished recording in milliseconds. Absent on
+   * records written before recording was supported, and null until a recording
+   * has been stopped successfully.
+   */
+  readonly recordingDurationMs?: number | null;
   readonly createdAt: string; // ISO 8601 datetime string
   readonly updatedAt: string; // ISO 8601 datetime string
 }

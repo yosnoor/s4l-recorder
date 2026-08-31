@@ -72,13 +72,29 @@ export interface InterviewRepository {
 export type RecorderStatus =
   "IDLE" | "PREPARING" | "RECORDING" | "PAUSED" | "STOPPED" | "ERROR";
 
+/** A finalised recording that exists as a real file on this device. */
+export type CompletedRecording = {
+  /** Non-identifying basename, e.g. `recording-<random-id>.m4a`. */
+  filename: string;
+  /** Location of the durable file. */
+  uri: string;
+  /** Captured length in milliseconds. */
+  durationMs: number;
+};
+
 /** Events emitted by the AudioRecorder during a recording session. */
 export type RecorderEvent =
   | { type: "STARTED"; filename: string }
   | { type: "PAUSED" }
   | { type: "RESUMED" }
-  | { type: "STOPPED"; filename: string; durationMs: number }
+  | ({ type: "STOPPED" } & CompletedRecording)
   | { type: "ERROR"; message: string };
+
+/** Requests microphone access at the moment recording is about to start. */
+export interface MicrophonePermission {
+  /** Returns true when capture may proceed. */
+  request(): Promise<boolean>;
+}
 
 /** Callback invoked when the recorder emits an event. */
 export type RecorderEventHandler = (event: RecorderEvent) => void;
@@ -112,7 +128,7 @@ export interface AudioRecorder {
    * Stops the recording and finalises the local file. After stop() the session
    * cannot be resumed; a new prepare() is required to record again.
    */
-  stop(): Promise<void>;
+  stop(): Promise<CompletedRecording>;
 
   /** Registers a handler for recorder lifecycle events. */
   onEvent(handler: RecorderEventHandler): void;

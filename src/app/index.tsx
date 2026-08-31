@@ -1,20 +1,26 @@
-import { Pressable, StyleSheet, View, FlatList } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { useRouter, useFocusEffect } from "expo-router";
+import { useFocusEffect, useRouter } from "expo-router";
 import { useCallback } from "react";
+import { FlatList, Pressable, StyleSheet, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
 import { Spacing } from "@/constants/theme";
+import type { Interview, InterviewLifecycle } from "@/domain/types";
 import { useInterviews } from "@/hooks/use-interviews";
 
-const getStatusText = (status: string) => {
+const getStatusText = (status: InterviewLifecycle) => {
   switch (status) {
-    case "DRAFT": return "Ready to record";
-    case "RECORDING": return "Recording in progress";
-    case "RECORDED": return "Recording ready on this device";
-    case "RECORDING_RECOVERABLE": return "Recording needs attention";
-    default: return "";
+    case "DRAFT":
+      return "Ready to record";
+    case "RECORDING":
+      return "Recording in progress";
+    case "RECORDED":
+      return "Recording ready on this device";
+    case "RECORDING_RECOVERABLE":
+      return "Recording needs attention";
+    default:
+      return "";
   }
 };
 
@@ -25,22 +31,34 @@ export default function InterviewsScreen() {
   useFocusEffect(
     useCallback(() => {
       refresh();
-    }, [refresh])
+    }, [refresh]),
   );
 
   const handleNewInterview = () => {
     router.push("/new-interview");
   };
 
-  const renderItem = ({ item }: { item: any }) => {
+  const openInterview = (interview: Interview) => {
+    // A finished recording opens its review; anything else opens recording.
+    const pathname =
+      interview.interviewLifecycle === "RECORDED"
+        ? ("/review" as const)
+        : ("/recording" as const);
+    router.push({ pathname, params: { id: interview.metadata.id } });
+  };
+
+  const renderItem = ({ item }: { item: Interview }) => {
     const statusText = getStatusText(item.interviewLifecycle);
     return (
       <Pressable
         style={styles.interviewItem}
         accessibilityRole="button"
         accessibilityLabel={`${item.metadata.intervieweeName}, ${item.metadata.interviewDate} • ${item.metadata.interviewer}, ${statusText}`}
+        onPress={() => openInterview(item)}
       >
-        <ThemedText type="defaultSemiBold">{item.metadata.intervieweeName}</ThemedText>
+        <ThemedText type="defaultSemiBold">
+          {item.metadata.intervieweeName}
+        </ThemedText>
         <ThemedText type="default" themeColor="textSecondary">
           {item.metadata.interviewDate} • {item.metadata.interviewer}
         </ThemedText>
@@ -66,7 +84,7 @@ export default function InterviewsScreen() {
         ) : (
           <FlatList
             data={interviews}
-            keyExtractor={item => item.metadata.id}
+            keyExtractor={(item) => item.metadata.id}
             renderItem={renderItem}
             contentContainerStyle={styles.listContainer}
           />

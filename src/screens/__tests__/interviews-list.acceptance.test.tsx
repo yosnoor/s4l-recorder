@@ -1,4 +1,9 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react-native";
+import {
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from "@testing-library/react-native";
 import { useRouter } from "expo-router";
 import InterviewsListScreen from "../../app/index"; // Adjust import as necessary when implementing
 import { Interview } from "../../domain/types";
@@ -37,20 +42,26 @@ describe("Interviews List Screen Acceptance Tests", () => {
 
     it("displays empty state text and New interview button", async () => {
       await render(<InterviewsListScreen />);
-      
+
       expect(screen.getByText("No interviews yet")).toBeTruthy();
-      expect(screen.getByText("Start a new interview when you are ready to record.")).toBeTruthy();
-      
-      const newInterviewButton = screen.getByRole("button", { name: /new interview/i });
+      expect(
+        screen.getByText("Start a new interview when you are ready to record."),
+      ).toBeTruthy();
+
+      const newInterviewButton = screen.getByRole("button", {
+        name: /new interview/i,
+      });
       expect(newInterviewButton).toBeTruthy();
     });
 
     it("navigates to New Interview screen when New interview is pressed", async () => {
       await render(<InterviewsListScreen />);
-      
-      const newInterviewButton = screen.getByRole("button", { name: /new interview/i });
+
+      const newInterviewButton = screen.getByRole("button", {
+        name: /new interview/i,
+      });
       fireEvent.press(newInterviewButton);
-      
+
       expect(mockPush).toHaveBeenCalledWith("/new-interview");
     });
   });
@@ -89,7 +100,11 @@ describe("Interviews List Screen Acceptance Tests", () => {
       render(<InterviewsListScreen />);
 
       await waitFor(() => {
-        expect(screen.getByRole("button", { name: /Jane Doe, 2026-08-23 • John Smith, Ready to record/i })).toBeTruthy();
+        expect(
+          screen.getByRole("button", {
+            name: /Jane Doe, 2026-08-23 • John Smith, Ready to record/i,
+          }),
+        ).toBeTruthy();
       });
     });
   });

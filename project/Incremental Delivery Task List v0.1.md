@@ -1,8 +1,34 @@
 # StoriesForLife Recording App — Incremental Delivery Task List v0.1
 
-**Status:** In progress — Slice 0 and Slice 1 complete; later recording and recovery slices remain pending.  
+**Status:** In progress — Slices 0, 1 and 2 are code-complete with all quality gates passing. Slice 2's on-device acceptance demonstration is still outstanding. Slices 3–7 remain pending.  
 **Inputs:** Product Specification v0.2 and Initial Product Design v0.1  
 **Delivery approach:** Small, demonstrable vertical slices; each slice leaves the app working and adds user-visible value.
+
+## Current status snapshot
+
+Last verified 31 August 2026 on macOS (Apple silicon), Node 26.7.0, npm 12.0.2, Expo SDK 57, at the "Implement slice 2" commit on `main`.
+
+| Command             | Result | Detail                     |
+| ------------------- | ------ | -------------------------- |
+| `npm run format`    | Pass   | —                          |
+| `npm run lint`      | Pass   | 0 errors, 12 warnings      |
+| `npm run typecheck` | Pass   | —                          |
+| `npm test`          | Pass   | 9 suites, 60 tests         |
+| `npm run verify`    | Pass   | Runs all four of the above |
+
+### Toolchain
+
+- **The Android build requires Java 17.** Under a newer JDK, Gradle 9.3.1 fails while transforming `core-for-system-modules.jar` (`jlink`/`JdkImageTransform`) and while configuring CMake for `react-native-screens` and `react-native-worklets`. `app:assembleDebug` completes on Temurin JDK 17. Because `android/` is generated and git-ignored, the pin is applied on each prebuild by the `plugins/with-gradle-daemon-jvm.js` config plugin, which writes `gradle/gradle-daemon-jvm.properties` with `toolchainVersion=17`.
+- Native iOS is unverified on this machine: only the Command Line Tools are selected, so full Xcode is needed before `npm run ios` can run.
+- `npx expo-doctor` reports 20 of 21 checks passing; 12 packages trail the patch versions expected by the installed SDK.
+
+### Outstanding verification
+
+Automated coverage cannot satisfy three conditions on its own. Each needs a device or emulator build:
+
+- A stopped recording exists as a real, non-empty file in the document directory and survives relaunch.
+- The elapsed timer and active state remain visible throughout a real capture.
+- Microphone permission is requested only when `Start recording` is pressed.
 
 ## Working rules
 
@@ -49,7 +75,9 @@ Slices 4, 5 and 6 may proceed in parallel once Slice 3 is stable, provided they 
 
 ### Slice 0 delivery note
 
-The JavaScript shell, domain tests, lint, type checking, formatting, and Android/iOS JavaScript bundle exports are validated on Windows. Android emulator/device launch validation remains outstanding because no Android target is available on this machine. Native iOS launch validation requires macOS/Xcode.
+The JavaScript shell, domain tests, lint, type checking, formatting, and Android/iOS JavaScript bundle exports were validated on Windows. Android emulator/device launch validation remained outstanding because no Android target was available on that machine. Native iOS launch validation requires macOS/Xcode.
+
+**Update, 31 August 2026 (macOS):** the Android Gradle build now compiles (`app:assembleDebug`) once the Java 17 pin described in the status snapshot is applied. Emulator launch and native iOS launch remain unvalidated, the latter because full Xcode is not installed.
 
 ## Slice 1 — Durable interview drafts
 
@@ -82,15 +110,15 @@ Create an interview for a synthetic participant, close the app, reopen it and fi
 
 ### Tasks
 
-- [ ] Run the audio technical spike: choose a platform-supported speech format, quality defaults, storage location and filename strategy; record the decision.
-- [ ] Define a `Recorder` boundary supporting prepare, start, stop, status and error events.
-- [ ] Implement secure, non-identifying local filename generation such as `recording-<random-id>.m4a`.
-- [ ] Build the recording screen's ready and active states, elapsed timer and local-save message.
-- [ ] Request microphone permission only when the interviewer starts recording.
-- [ ] Persist recording-session intent and associate the generated local file with the interview before audio capture begins.
-- [ ] Implement start and stop operations, transitioning `DRAFT → RECORDING → RECORDED` only after successful completion.
-- [ ] Show the stop confirmation, then move to a simple recording-ready review state.
-- [ ] Add tests for state transitions, generated filenames, recording association and stop confirmation cancellation.
+- [x] Run the audio technical spike: choose a platform-supported speech format, quality defaults, storage location and filename strategy; record the decision.
+- [x] Define a `Recorder` boundary supporting prepare, start, stop, status and error events.
+- [x] Implement secure, non-identifying local filename generation such as `recording-<random-id>.m4a`.
+- [x] Build the recording screen's ready and active states, elapsed timer and local-save message.
+- [x] Request microphone permission only when the interviewer starts recording.
+- [x] Persist recording-session intent and associate the generated local file with the interview before audio capture begins.
+- [x] Implement start and stop operations, transitioning `DRAFT → RECORDING → RECORDED` only after successful completion.
+- [x] Show the stop confirmation, then move to a simple recording-ready review state.
+- [x] Add tests for state transitions, generated filenames, recording association and stop confirmation cancellation.
 
 ### Acceptance demonstration
 
@@ -101,6 +129,22 @@ Create an interview, start a short synthetic recording, stop it and return to th
 - A stopped recording is a real file outside volatile memory and its metadata is durable.
 - The recording screen continuously displays both active state and elapsed time.
 - Stopping never appends to an earlier finalised recording.
+
+### Slice 2 delivery note
+
+Code-complete on 31 August 2026. The spike decision is recorded in `project/adr/0001-audio-recording-format-and-storage.md`: `expo-audio` 57.0.4, AAC in an `.m4a` container, 44.1 kHz mono at 64 kbps, stored in the app document directory, with filenames of the form `recording-<random-id>.m4a` built from `expo-crypto`. `expo-audio`, `expo-file-system` and `expo-crypto` are pinned to exact versions, and `app.json` configures the microphone usage string with `enableBackgroundRecording` left off.
+
+Structure delivered:
+
+- `src/domain/recording-filename.ts` generates and validates non-identifying filenames.
+- `src/ports/index.ts` extends the recorder boundary with a `CompletedRecording` stop result and a `MicrophonePermission` port; `expo-audio-recorder.ts`, `expo-microphone-permission.ts` and `system.ts` are the production adapters.
+- `src/application/recording-service.ts` fixes the order of operations: guard the transition, request permission, generate the filename, persist the file association, prepare, capture, then persist `RECORDING`. Stop persists `RECORDED` only after the recorder reports a finalised file.
+- `src/hooks/use-recording-session.ts` plus the `recording` and `review` routes provide the ready and active states, the elapsed timer, the local-save message and the stop confirmation.
+- Tests: `recording-filename.test.ts`, `recording-service.test.ts`, `recording.acceptance.test.tsx` and `recording-timer.acceptance.test.tsx`.
+
+Two safeguards are worth carrying forward. The adapter refuses to move a finished recording onto an existing path and checks the moved file is non-empty, and each session generates a fresh filename, so stopping cannot append to an earlier recording. A denied permission or a failed prepare/start leaves the interview in `DRAFT` with no recording attached.
+
+Outstanding: the acceptance demonstration has not been run on a device or emulator, so the durable-file and continuous-timer conditions are evidenced only by automated tests. Playback verification is deliberately deferred to Slice 3, which means product criterion AC1's "playable" wording is not yet fully demonstrated.
 
 ## Slice 3 — Pause, resume and playback
 

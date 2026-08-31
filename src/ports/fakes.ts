@@ -11,8 +11,10 @@ import type { Interview } from "../domain/types";
 import type {
   AudioRecorder,
   Clock,
+  CompletedRecording,
   IdGenerator,
   InterviewRepository,
+  MicrophonePermission,
   RecorderEvent,
   RecorderEventHandler,
   RecorderStatus,
@@ -91,6 +93,9 @@ export class FakeInterviewRepository implements InterviewRepository {
   /** Direct access to the backing store for test setup and assertions. */
   readonly store = new Map<string, Interview>();
 
+  /** Every interview written, in order, for assertions about write sequence. */
+  readonly writes: Interview[] = [];
+
   async save(interview: Interview): Promise<void> {
     if (this.store.has(interview.metadata.id)) {
       throw new Error(
@@ -98,6 +103,7 @@ export class FakeInterviewRepository implements InterviewRepository {
       );
     }
     this.store.set(interview.metadata.id, interview);
+    this.writes.push(interview);
   }
 
   async update(interview: Interview): Promise<void> {
@@ -107,6 +113,7 @@ export class FakeInterviewRepository implements InterviewRepository {
       );
     }
     this.store.set(interview.metadata.id, interview);
+    this.writes.push(interview);
   }
 
   async findById(id: string): Promise<Interview | null> {
@@ -129,6 +136,29 @@ export class FakeInterviewRepository implements InterviewRepository {
   /** Remove all entries. Useful for test isolation. */
   clear(): void {
     this.store.clear();
+    this.writes.length = 0;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// FakeMicrophonePermission
+// ---------------------------------------------------------------------------
+
+/** A microphone permission that grants or denies on command. */
+export class FakeMicrophonePermission implements MicrophonePermission {
+  /** Number of times access was requested, for timing assertions. */
+  requestCount = 0;
+
+  constructor(private granted = true) {}
+
+  async request(): Promise<boolean> {
+    this.requestCount += 1;
+    return this.granted;
+  }
+
+  /** Change the answer the next request will give. */
+  setGranted(granted: boolean): void {
+    this.granted = granted;
   }
 }
 
@@ -144,9 +174,19 @@ export class FakeAudioRecorder implements AudioRecorder {
   private _status: RecorderStatus = "IDLE";
   private _preparedFilename: string | null = null;
   private readonly handlers: RecorderEventHandler[] = [];
+  private readonly finalisedFilenames = new Set<string>();
 
   /** Sequence of calls made to this recorder, for assertion. */
   readonly calls: string[] = [];
+
+  /** Duration reported by the next successful stop(). */
+  durationMs = 1000;
+
+  /** When set, the next start() rejects with this message. */
+  failNextStart: string | null = null;
+
+  /** When set, the next stop() rejects with this message. */
+  failNextStop: string | null = null;
 
   get status(): RecorderStatus {
     return this._status;
@@ -154,6 +194,12 @@ export class FakeAudioRecorder implements AudioRecorder {
 
   async prepare(filename: string): Promise<void> {
     this.calls.push(`prepare:${filename}`);
+    if (this.finalisedFilenames.has(filename)) {
+      this._status = "ERROR";
+      throw new Error(
+        `FakeAudioRecorder: '${filename}' has already been finalised.`,
+      );
+    }
     this._preparedFilename = filename;
     this._status = "PREPARING";
   }
@@ -162,6 +208,13 @@ export class FakeAudioRecorder implements AudioRecorder {
     this.calls.push("start");
     if (!this._preparedFilename) {
       throw new Error("FakeAudioRecorder: start() called before prepare().");
+    }
+    if (this.failNextStart) {
+      const message = this.failNextStart;
+      this.failNextStart = null;
+      this._status = "ERROR";
+      this.emit({ type: "ERROR", message });
+      throw new Error(message);
     }
     this._status = "RECORDING";
     this.emit({ type: "STARTED", filename: this._preparedFilename });
@@ -179,20 +232,34 @@ export class FakeAudioRecorder implements AudioRecorder {
     this.emit({ type: "RESUMED" });
   }
 
-  async stop(): Promise<void> {
+  async stop(): Promise<CompletedRecording> {
     this.calls.push("stop");
-    if (!this._preparedFilename) {
+    const filename = this._preparedFilename;
+    if (!filename) {
       throw new Error(
         "FakeAudioRecorder: stop() called without a prepared filename.",
       );
     }
+    if (this.failNextStop) {
+      const message = this.failNextStop;
+      this.failNextStop = null;
+      this._status = "ERROR";
+      this.emit({ type: "ERROR", message });
+      throw new Error(message);
+    }
+
     this._status = "STOPPED";
-    this.emit({
-      type: "STOPPED",
-      filename: this._preparedFilename,
-      durationMs: 0,
-    });
     this._preparedFilename = null;
+    // A finalised file is never reopened, mirroring the production adapter.
+    this.finalisedFilenames.add(filename);
+
+    const completed: CompletedRecording = {
+      filename,
+      uri: `file:///documents/recordings/${filename}`,
+      durationMs: this.durationMs,
+    };
+    this.emit({ type: "STOPPED", ...completed });
+    return completed;
   }
 
   onEvent(handler: RecorderEventHandler): void {

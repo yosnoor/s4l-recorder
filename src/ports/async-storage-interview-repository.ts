@@ -1,15 +1,17 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { InterviewRepository } from './index';
-import { Interview } from '../domain/types';
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { InterviewRepository } from "./index";
+import { Interview } from "../domain/types";
 
-const PREFIX = 's4l_interview_';
+const PREFIX = "s4l_interview_";
 
 export class AsyncStorageInterviewRepository implements InterviewRepository {
   async save(interview: Interview): Promise<void> {
     const key = PREFIX + interview.metadata.id;
     const existing = await AsyncStorage.getItem(key);
     if (existing) {
-      throw new Error(`Interview with id ${interview.metadata.id} already exists`);
+      throw new Error(
+        `Interview with id ${interview.metadata.id} already exists`,
+      );
     }
     const payload = JSON.stringify({ version: 1, data: interview });
     await AsyncStorage.setItem(key, payload);
@@ -40,12 +42,12 @@ export class AsyncStorageInterviewRepository implements InterviewRepository {
   async findAll(): Promise<Interview[]> {
     try {
       const allKeys = await AsyncStorage.getAllKeys();
-      const keys = allKeys.filter(k => k.startsWith(PREFIX));
+      const keys = allKeys.filter((k) => k.startsWith(PREFIX));
       if (keys.length === 0) return [];
-      
+
       const items = await AsyncStorage.multiGet(keys);
       const interviews: Interview[] = [];
-      
+
       for (const [key, value] of items) {
         if (value) {
           try {
@@ -58,11 +60,13 @@ export class AsyncStorageInterviewRepository implements InterviewRepository {
           }
         }
       }
-      
-      interviews.sort((a, b) => 
-        new Date(b.metadata.updatedAt).getTime() - new Date(a.metadata.updatedAt).getTime()
+
+      interviews.sort(
+        (a, b) =>
+          new Date(b.metadata.updatedAt).getTime() -
+          new Date(a.metadata.updatedAt).getTime(),
       );
-      
+
       return interviews;
     } catch (e) {
       return [];

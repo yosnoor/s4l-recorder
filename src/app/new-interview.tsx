@@ -13,13 +13,19 @@ export default function NewInterviewScreen() {
   const router = useRouter();
 
   const [intervieweeName, setIntervieweeName] = useState("");
-  const [interviewDate, setInterviewDate] = useState(() => new Date().toISOString().split("T")[0]);
+  const [interviewDate, setInterviewDate] = useState(
+    () => new Date().toISOString().split("T")[0],
+  );
   const [interviewer, setInterviewer] = useState("");
   const [notes, setNotes] = useState("");
-  
+
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
-  const isDirty = intervieweeName !== "" || interviewer !== "" || notes !== "" || interviewDate !== new Date().toISOString().split("T")[0];
+  const isDirty =
+    intervieweeName !== "" ||
+    interviewer !== "" ||
+    notes !== "" ||
+    interviewDate !== new Date().toISOString().split("T")[0];
 
   const handleBack = () => {
     if (isDirty) {
@@ -28,8 +34,12 @@ export default function NewInterviewScreen() {
         "You have unsaved changes. Are you sure you want to discard this draft?",
         [
           { text: "Cancel", style: "cancel" },
-          { text: "Discard", style: "destructive", onPress: () => router.back() }
-        ]
+          {
+            text: "Discard",
+            style: "destructive",
+            onPress: () => router.back(),
+          },
+        ],
       );
     } else {
       router.back();
@@ -38,9 +48,12 @@ export default function NewInterviewScreen() {
 
   const handleSave = async () => {
     const newErrors: { [key: string]: string } = {};
-    if (!intervieweeName.trim()) newErrors.intervieweeName = "Interviewee name is required";
-    if (!interviewer.trim()) newErrors.interviewer = "Interviewer name is required";
-    if (!interviewDate.trim()) newErrors.interviewDate = "Interview date is required";
+    if (!intervieweeName.trim())
+      newErrors.intervieweeName = "Interviewee name is required";
+    if (!interviewer.trim())
+      newErrors.interviewer = "Interviewer name is required";
+    if (!interviewDate.trim())
+      newErrors.interviewDate = "Interview date is required";
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -56,17 +69,21 @@ export default function NewInterviewScreen() {
         notes,
         recordingFilename: null,
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       },
       interviewLifecycle: "DRAFT",
       recordingPersistence: "LOCAL_ONLY",
-      deliveryLifecycle: "NOT_SENT"
+      deliveryLifecycle: "NOT_SENT",
     };
 
     try {
       const repository = new AsyncStorageInterviewRepository();
+      // The draft is saved before the recording screen can open the microphone.
       await repository.save(newInterview);
-      router.replace("/");
+      router.replace({
+        pathname: "/recording",
+        params: { id: newInterview.metadata.id },
+      });
     } catch (e) {
       console.error(e);
       Alert.alert("Error", "Could not save draft");
@@ -84,7 +101,11 @@ export default function NewInterviewScreen() {
             value={intervieweeName}
             onChangeText={setIntervieweeName}
           />
-          {errors.intervieweeName && <ThemedText style={styles.error}>{errors.intervieweeName}</ThemedText>}
+          {errors.intervieweeName && (
+            <ThemedText style={styles.error}>
+              {errors.intervieweeName}
+            </ThemedText>
+          )}
 
           <TextInput
             style={styles.input}
@@ -93,7 +114,9 @@ export default function NewInterviewScreen() {
             value={interviewDate}
             onChangeText={setInterviewDate}
           />
-          {errors.interviewDate && <ThemedText style={styles.error}>{errors.interviewDate}</ThemedText>}
+          {errors.interviewDate && (
+            <ThemedText style={styles.error}>{errors.interviewDate}</ThemedText>
+          )}
 
           <TextInput
             style={styles.input}
@@ -102,7 +125,9 @@ export default function NewInterviewScreen() {
             value={interviewer}
             onChangeText={setInterviewer}
           />
-          {errors.interviewer && <ThemedText style={styles.error}>{errors.interviewer}</ThemedText>}
+          {errors.interviewer && (
+            <ThemedText style={styles.error}>{errors.interviewer}</ThemedText>
+          )}
 
           <TextInput
             style={[styles.input, styles.textArea]}
@@ -114,7 +139,10 @@ export default function NewInterviewScreen() {
           />
 
           <Pressable
-            style={({ pressed }) => [styles.saveButton, pressed && styles.buttonPressed]}
+            style={({ pressed }) => [
+              styles.saveButton,
+              pressed && styles.buttonPressed,
+            ]}
             accessibilityRole="button"
             accessibilityLabel="Save draft"
             onPress={handleSave}
@@ -122,7 +150,10 @@ export default function NewInterviewScreen() {
             <ThemedText style={styles.saveLabel}>Save draft</ThemedText>
           </Pressable>
           <Pressable
-            style={({ pressed }) => [styles.saveButton, pressed && styles.buttonPressed]}
+            style={({ pressed }) => [
+              styles.saveButton,
+              pressed && styles.buttonPressed,
+            ]}
             accessibilityRole="button"
             accessibilityLabel="Back"
             onPress={handleBack}
@@ -145,11 +176,11 @@ const styles = StyleSheet.create({
     borderRadius: Spacing.one,
     padding: Spacing.two,
     fontSize: 16,
-    backgroundColor: "#fff"
+    backgroundColor: "#fff",
   },
   textArea: {
     height: 100,
-    textAlignVertical: "top"
+    textAlignVertical: "top",
   },
   error: { color: "red", fontSize: 12 },
   saveButton: {
@@ -157,11 +188,11 @@ const styles = StyleSheet.create({
     borderRadius: Spacing.two,
     paddingVertical: Spacing.three,
     alignItems: "center",
-    marginTop: Spacing.three
+    marginTop: Spacing.three,
   },
   buttonPressed: { opacity: 0.8 },
   saveLabel: { color: "#ffffff", fontWeight: "600" },
   backButton: {
-    paddingLeft: Spacing.two
-  }
+    paddingLeft: Spacing.two,
+  },
 });

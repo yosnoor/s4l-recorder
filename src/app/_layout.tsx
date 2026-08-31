@@ -19,6 +19,8 @@ export default function RootLayout() {
           name="index"
           options={{ title: "Interviews", headerLargeTitle: true }}
         />
+        <Stack.Screen name="recording" options={{ title: "Recording" }} />
+        <Stack.Screen name="review" options={{ title: "Review" }} />
       </Stack>
     </ThemeProvider>
   );

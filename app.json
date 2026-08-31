@@ -8,7 +8,8 @@
     "scheme": "s4lrecorder",
     "userInterfaceStyle": "automatic",
     "ios": {
-      "icon": "./assets/expo.icon"
+      "icon": "./assets/expo.icon",
+      "bundleIdentifier": "com.yosnoor.s4lrecorder"
     },
     "android": {
       "adaptiveIcon": {
@@ -26,6 +27,14 @@
     },
     "plugins": [
       "expo-router",
+      "./plugins/with-gradle-daemon-jvm",
+      [
+        "expo-audio",
+        {
+          "microphonePermission": "Allow $(PRODUCT_NAME) to record interview audio.",
+          "enableBackgroundRecording": false
+        }
+      ],
       [
         "expo-splash-screen",
         {
