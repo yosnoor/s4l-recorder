@@ -4,13 +4,16 @@ import { useRouter } from "expo-router";
 import InterviewsListScreen from "../../app/index";
 import NewInterviewScreen from "../../app/new-interview";
 import type { Interview } from "../../domain/types";
-import { AsyncStorageInterviewRepository } from "../../ports/async-storage-interview-repository";
 
 jest.mock("expo-router", () => {
-  const React = require("react");
+  // eslint-disable-next-line @typescript-eslint/no-require-imports -- jest.mock factories are hoisted above imports, so require is the only way to reach React here
+  const React = require("react") as typeof import("react");
   return {
     useRouter: jest.fn(),
-    useFocusEffect: jest.fn((cb) => React.useEffect(cb, [])),
+    useFocusEffect: jest.fn((cb: () => void) =>
+      // eslint-disable-next-line react-hooks/exhaustive-deps -- the mock deliberately runs the focus callback once on mount
+      React.useEffect(cb, []),
+    ),
   };
 });
 
@@ -18,10 +21,12 @@ jest.mock("expo-router", () => {
 // The acceptance test usually uses the real repository with AsyncStorage mock.
 // We'll mock the hook to use a real repository instance for testing.
 jest.mock("../../hooks/use-interviews", () => {
+  /* eslint-disable @typescript-eslint/no-require-imports -- jest.mock factories are hoisted above imports, so require is the only way to reach these modules here */
   const React = require("react") as typeof import("react");
   const {
     AsyncStorageInterviewRepository,
   } = require("../../ports/async-storage-interview-repository");
+  /* eslint-enable @typescript-eslint/no-require-imports */
 
   return {
     useInterviews: () => {
@@ -52,8 +57,6 @@ jest.mock("../../ports/async-storage-interview-repository", () => {
 });
 
 describe("Durable Interview Drafts (Slice 1 End-to-End)", () => {
-  let repository: AsyncStorageInterviewRepository;
-
   beforeEach(async () => {
     jest.clearAllMocks();
     await AsyncStorage.clear();

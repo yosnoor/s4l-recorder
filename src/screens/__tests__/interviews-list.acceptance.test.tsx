@@ -10,10 +10,14 @@ import { Interview } from "../../domain/types";
 
 // Mock expo-router
 jest.mock("expo-router", () => {
-  const React = require("react");
+  // eslint-disable-next-line @typescript-eslint/no-require-imports -- jest.mock factories are hoisted above imports, so require is the only way to reach React here
+  const React = require("react") as typeof import("react");
   return {
     useRouter: jest.fn(),
-    useFocusEffect: jest.fn((cb) => React.useEffect(cb, [])),
+    useFocusEffect: jest.fn((cb: () => void) =>
+      // eslint-disable-next-line react-hooks/exhaustive-deps -- the mock deliberately runs the focus callback once on mount
+      React.useEffect(cb, []),
+    ),
   };
 });
 

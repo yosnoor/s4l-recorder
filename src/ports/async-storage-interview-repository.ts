@@ -1,6 +1,6 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { InterviewRepository } from "./index";
 import { Interview } from "../domain/types";
+import { InterviewRepository } from "./index";
 
 const PREFIX = "s4l_interview_";
 
@@ -34,7 +34,7 @@ export class AsyncStorageInterviewRepository implements InterviewRepository {
       if (!item) return null;
       const parsed = JSON.parse(item);
       return parsed.data;
-    } catch (e) {
+    } catch {
       return null;
     }
   }
@@ -48,14 +48,14 @@ export class AsyncStorageInterviewRepository implements InterviewRepository {
       const items = await AsyncStorage.multiGet(keys);
       const interviews: Interview[] = [];
 
-      for (const [key, value] of items) {
+      for (const [, value] of items) {
         if (value) {
           try {
             const parsed = JSON.parse(value);
             if (parsed && parsed.data) {
               interviews.push(parsed.data);
             }
-          } catch (e) {
+          } catch {
             // skip corrupt
           }
         }
@@ -68,7 +68,7 @@ export class AsyncStorageInterviewRepository implements InterviewRepository {
       );
 
       return interviews;
-    } catch (e) {
+    } catch {
       return [];
     }
   }

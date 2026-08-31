@@ -1,13 +1,7 @@
-import React from "react";
-import {
-  render,
-  screen,
-  fireEvent,
-  waitFor,
-} from "@testing-library/react-native";
-import NewInterviewScreen from "../../app/new-interview"; // Adjust import later
+import { fireEvent, render, waitFor } from "@testing-library/react-native";
 import { useRouter } from "expo-router";
 import { Alert } from "react-native";
+import NewInterviewScreen from "../../app/new-interview"; // Adjust import later
 import { AsyncStorageInterviewRepository } from "../../ports/async-storage-interview-repository";
 
 jest.mock("expo-router", () => ({
