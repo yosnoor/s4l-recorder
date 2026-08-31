@@ -3,5 +3,7 @@
     "source.fixAll": "explicit",
     "source.organizeImports": "explicit",
     "source.sortMembers": "explicit"
-  }
+  },
+  "jest.jestCommandLine": "node_modules/.bin/jest",
+  "jest.runMode": "on-demand"
 }

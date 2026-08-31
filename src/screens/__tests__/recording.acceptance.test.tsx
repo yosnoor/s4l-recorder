@@ -1,5 +1,6 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
+  act,
   fireEvent,
   render,
   screen,
@@ -66,7 +67,12 @@ const pressAlertButton = async (label: string) => {
   const button = buttons.find(
     (candidate: { text: string }) => candidate.text === label,
   );
-  await button?.onPress?.();
+
+  // The handler resolves asynchronously and updates screen state, so it must
+  // run inside act() for React to flush those updates before assertions.
+  await act(async () => {
+    await button?.onPress?.();
+  });
 };
 
 describe("Recording screen acceptance", () => {
