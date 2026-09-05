@@ -13,10 +13,12 @@ export const ACTIVE_SAVE_MESSAGE = "Recording is being saved on this device";
 export default function RecordingScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id?: string }>();
-  const { interview, state, elapsedLabel, error, start, stop } =
+  const { interview, state, elapsedLabel, error, start, pause, resume, stop } =
     useRecordingSession(id);
 
-  const isRecording = state === "RECORDING" || state === "SAVING";
+  const isRecording =
+    state === "RECORDING" || state === "PAUSED" || state === "SAVING";
+  const isPaused = state === "PAUSED";
 
   const confirmStop = () => {
     Alert.alert(
@@ -73,7 +75,11 @@ export default function RecordingScreen() {
             accessibilityRole="header"
             accessibilityLiveRegion="polite"
           >
-            {isRecording ? "Recording" : "Ready to record"}
+            {isPaused
+              ? "Recording paused"
+              : isRecording
+                ? "Recording"
+                : "Ready to record"}
           </ThemedText>
 
           <ThemedText
@@ -85,7 +91,11 @@ export default function RecordingScreen() {
           </ThemedText>
 
           <ThemedText type="default" themeColor="textSecondary">
-            {isRecording ? ACTIVE_SAVE_MESSAGE : READY_SAVE_MESSAGE}
+            {isPaused
+              ? "Recording is paused and saved on this device"
+              : isRecording
+                ? ACTIVE_SAVE_MESSAGE
+                : READY_SAVE_MESSAGE}
           </ThemedText>
         </View>
 
@@ -97,20 +107,39 @@ export default function RecordingScreen() {
 
         <View style={styles.actions}>
           {isRecording ? (
-            <Pressable
-              style={({ pressed }) => [
-                styles.primaryButton,
-                styles.stopButton,
-                pressed && styles.buttonPressed,
-              ]}
-              accessibilityRole="button"
-              accessibilityLabel="Stop recording"
-              onPress={confirmStop}
-            >
-              <ThemedText style={styles.primaryLabel}>
-                Stop recording
-              </ThemedText>
-            </Pressable>
+            <>
+              {state === "SAVING" ? null : (
+                <Pressable
+                  style={({ pressed }) => [
+                    styles.primaryButton,
+                    pressed && styles.buttonPressed,
+                  ]}
+                  accessibilityRole="button"
+                  accessibilityLabel={
+                    isPaused ? "Resume recording" : "Pause recording"
+                  }
+                  onPress={isPaused ? resume : pause}
+                >
+                  <ThemedText style={styles.primaryLabel}>
+                    {isPaused ? "Resume recording" : "Pause recording"}
+                  </ThemedText>
+                </Pressable>
+              )}
+              <Pressable
+                style={({ pressed }) => [
+                  styles.primaryButton,
+                  styles.stopButton,
+                  pressed && styles.buttonPressed,
+                ]}
+                accessibilityRole="button"
+                accessibilityLabel="Stop recording"
+                onPress={confirmStop}
+              >
+                <ThemedText style={styles.primaryLabel}>
+                  Stop recording
+                </ThemedText>
+              </Pressable>
+            </>
           ) : (
             <Pressable
               style={({ pressed }) => [

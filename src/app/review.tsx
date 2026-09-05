@@ -1,4 +1,5 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
+import { useAudioPlayer, useAudioPlayerStatus } from "expo-audio";
 import { useEffect, useState } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -9,12 +10,12 @@ import { Spacing } from "@/constants/theme";
 import type { Interview } from "@/domain/types";
 import { formatElapsed } from "@/hooks/use-recording-session";
 import { AsyncStorageInterviewRepository } from "@/ports/async-storage-interview-repository";
+import { recordingFileFor } from "@/ports/expo-audio-recorder";
 
 export const LOCAL_ONLY_MESSAGE = "Saved on this device only";
 
 /**
- * Simple recording-ready review state. Playback arrives in Slice 3, so this
- * screen only confirms what is durably stored.
+ * Review is only marked ready after the durable file is present and loadable.
  */
 export default function ReviewScreen() {
   const router = useRouter();
@@ -49,6 +50,20 @@ export default function ReviewScreen() {
   const hasRecording =
     interview?.interviewLifecycle === "RECORDED" &&
     Boolean(interview?.metadata.recordingFilename);
+  const recordingFile = hasRecording
+    ? recordingFileFor(interview?.metadata.recordingFilename ?? "")
+    : null;
+  const fileExists = Boolean(
+    recordingFile?.exists && (recordingFile.size ?? 0) > 0,
+  );
+  const player = useAudioPlayer(
+    fileExists ? (recordingFile?.uri ?? null) : null,
+  );
+  const playerStatus = useAudioPlayerStatus(player);
+  const playable =
+    hasRecording && fileExists && playerStatus.isLoaded && !playerStatus.error;
+  const checkingPlayback =
+    hasRecording && fileExists && !playerStatus.isLoaded && !playerStatus.error;
 
   return (
     <ThemedView style={styles.container}>
@@ -56,7 +71,7 @@ export default function ReviewScreen() {
         <View style={styles.body}>
           {!loaded ? (
             <ThemedText type="default">Opening recording…</ThemedText>
-          ) : hasRecording ? (
+          ) : playable ? (
             <>
               <ThemedText type="subtitle" accessibilityRole="header">
                 Recording ready
@@ -81,6 +96,34 @@ export default function ReviewScreen() {
               >
                 Length{" "}
                 {formatElapsed(interview?.metadata.recordingDurationMs ?? 0)}
+              </ThemedText>
+              <Pressable
+                style={({ pressed }) => [
+                  styles.button,
+                  pressed && styles.buttonPressed,
+                ]}
+                accessibilityRole="button"
+                accessibilityLabel={
+                  playerStatus.playing ? "Pause recording" : "Play recording"
+                }
+                onPress={() =>
+                  playerStatus.playing ? player.pause() : player.play()
+                }
+              >
+                <ThemedText style={styles.buttonLabel}>
+                  {playerStatus.playing ? "Pause recording" : "Play recording"}
+                </ThemedText>
+              </Pressable>
+            </>
+          ) : checkingPlayback ? (
+            <ThemedText type="default">Checking recording…</ThemedText>
+          ) : hasRecording ? (
+            <>
+              <ThemedText type="subtitle" accessibilityRole="header">
+                Recording unavailable
+              </ThemedText>
+              <ThemedText type="default" themeColor="textSecondary">
+                This recording could not be verified as playable on this device.
               </ThemedText>
             </>
           ) : (

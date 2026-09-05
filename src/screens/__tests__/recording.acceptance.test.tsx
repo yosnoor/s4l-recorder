@@ -164,6 +164,29 @@ describe("Recording screen acceptance", () => {
     expect(screen.getByRole("button", { name: "Stop recording" })).toBeTruthy();
   });
 
+  it("pauses and resumes without advancing the captured timer while paused", async () => {
+    await renderReady();
+    await startRecording();
+
+    await fireEvent.press(
+      screen.getByRole("button", { name: "Pause recording" }),
+    );
+
+    await waitFor(() =>
+      expect(screen.getByText("Recording paused")).toBeTruthy(),
+    );
+    expect(
+      screen.getByRole("button", { name: "Resume recording" }),
+    ).toBeTruthy();
+    expect(mockRecorder.calls).toContain("pause");
+
+    await fireEvent.press(
+      screen.getByRole("button", { name: "Resume recording" }),
+    );
+    await waitFor(() => expect(screen.getByText("Recording")).toBeTruthy());
+    expect(mockRecorder.calls).toContain("resume");
+  });
+
   it("keeps recording and writes nothing when stop is cancelled", async () => {
     await renderReady();
     await startRecording();

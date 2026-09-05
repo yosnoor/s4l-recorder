@@ -171,13 +171,13 @@ Outstanding: playback verification is deliberately deferred to Slice 3, so produ
 
 ### Tasks
 
-- [ ] Write acceptance tests for pause/resume timing, state changes and playable completed audio.
-- [ ] Extend the recorder boundary for pause and resume, including unsupported-capability handling.
-- [ ] Implement recording-screen paused state, local-save language and resume action.
-- [ ] Ensure elapsed time accounts for only captured audio, or clearly specify and apply the platform-consistent alternative.
-- [ ] Build the full recording-review screen: local-only safety statement, duration, metadata summary and accessible player.
-- [ ] Verify audio existence and playability before presenting `Recording ready`.
-- [ ] Announce recording start, pause, resume and stop to assistive technology.
+- [x] Write acceptance tests for pause/resume timing, state changes and playable completed audio.
+- [x] Extend the recorder boundary for pause and resume, including unsupported-capability handling.
+- [x] Implement recording-screen paused state, local-save language and resume action.
+- [x] Ensure elapsed time accounts for only captured audio, or clearly specify and apply the platform-consistent alternative.
+- [x] Build the full recording-review screen: local-only safety statement, duration, metadata summary and accessible player.
+- [x] Verify audio existence and playability before presenting `Recording ready`.
+- [x] Announce recording start, pause, resume and stop to assistive technology.
 - [ ] Add manual platform tests for playback through device audio routes.
 
 ### Acceptance demonstration
@@ -189,6 +189,12 @@ Record, pause, resume and stop. Play the recording from review and verify that t
 - Completed audio can be played from the review screen on both platforms.
 - The user never sees `Saved on this device only` for a missing or unplayable file.
 - Controls meet tap-target, label and focus requirements.
+
+### Slice 3 implementation note
+
+Automated implementation is complete. The recorder service now supports guarded pause and resume operations; the recording screen announces active and paused states, preserves captured-only elapsed time across pauses, and exposes accessible pause, resume and stop actions. The review screen resolves the durable local file, verifies that it exists and is non-empty, waits for `expo-audio` to load it without an error, and only then presents the local-only ready state and player control.
+
+Focused and full automated tests pass: 9 suites, 63 tests. Manual playback through device audio routes on iOS and Android remains outstanding.
 
 ## Slice 4 — Safe replace and delete
 

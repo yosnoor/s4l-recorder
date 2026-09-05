@@ -198,3 +198,37 @@ describe("RecordingService.stop", () => {
     expect(recorder.calls.filter((call) => call === "stop")).toHaveLength(1);
   });
 });
+
+describe("RecordingService.pause and resume", () => {
+  it("pauses and resumes an active recording without changing interview lifecycle", async () => {
+    const { service, repository, recorder } = await harness();
+    await service.start("interview-1");
+
+    await service.pause("interview-1");
+    expect(recorder.calls).toEqual([
+      "prepare:recording-rec1.m4a",
+      "start",
+      "pause",
+    ]);
+    expect((await repository.findById("interview-1"))?.interviewLifecycle).toBe(
+      "RECORDING",
+    );
+
+    await service.resume("interview-1");
+    expect(recorder.calls).toEqual([
+      "prepare:recording-rec1.m4a",
+      "start",
+      "pause",
+      "resume",
+    ]);
+  });
+
+  it("rejects pausing and resuming when no recording is active", async () => {
+    const { service } = await harness();
+
+    await expect(service.pause("interview-1")).rejects.toThrow(/cannot pause/i);
+    await expect(service.resume("interview-1")).rejects.toThrow(
+      /cannot resume/i,
+    );
+  });
+});

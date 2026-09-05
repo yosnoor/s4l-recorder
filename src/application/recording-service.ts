@@ -122,6 +122,26 @@ export class RecordingService {
     return recorded;
   }
 
+  async pause(interviewId: string): Promise<void> {
+    const interview = await this.require(interviewId);
+    if (interview.interviewLifecycle !== "RECORDING") {
+      throw new Error(
+        `Cannot pause interview from '${interview.interviewLifecycle}'.`,
+      );
+    }
+    await this.deps.recorder.pause();
+  }
+
+  async resume(interviewId: string): Promise<void> {
+    const interview = await this.require(interviewId);
+    if (interview.interviewLifecycle !== "RECORDING") {
+      throw new Error(
+        `Cannot resume interview from '${interview.interviewLifecycle}'.`,
+      );
+    }
+    await this.deps.recorder.resume();
+  }
+
   private async require(interviewId: string): Promise<Interview> {
     const interview = await this.deps.repository.findById(interviewId);
     if (!interview) {

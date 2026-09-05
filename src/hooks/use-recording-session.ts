@@ -18,7 +18,8 @@ import { useExpoAudioRecorder } from "@/ports/expo-audio-recorder";
 import { expoMicrophonePermission } from "@/ports/expo-microphone-permission";
 import { cryptoIdGenerator, systemClock } from "@/ports/system";
 
-export type RecordingScreenState = "LOADING" | "READY" | "RECORDING" | "SAVING";
+export type RecordingScreenState =
+  "LOADING" | "READY" | "RECORDING" | "PAUSED" | "SAVING";
 
 const TIMER_INTERVAL_MS = 250;
 
@@ -58,6 +59,7 @@ export function useRecordingSession(interviewId: string | undefined) {
   const [elapsedMs, setElapsedMs] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const startedAtMs = useRef<number | null>(null);
+  const capturedMs = useRef(0);
 
   useEffect(() => {
     let cancelled = false;
@@ -96,7 +98,7 @@ export function useRecordingSession(interviewId: string | undefined) {
 
     const tick = () => {
       if (startedAtMs.current !== null) {
-        setElapsedMs(Date.now() - startedAtMs.current);
+        setElapsedMs(capturedMs.current + Date.now() - startedAtMs.current);
       }
     };
 
@@ -113,6 +115,7 @@ export function useRecordingSession(interviewId: string | undefined) {
       const started = await service.start(interviewId);
       setInterview(started);
       startedAtMs.current = Date.now();
+      capturedMs.current = 0;
       setElapsedMs(0);
       setState("RECORDING");
     } catch (cause) {
@@ -125,6 +128,35 @@ export function useRecordingSession(interviewId: string | undefined) {
     }
   }, [interviewId, service]);
 
+  const pause = useCallback(async () => {
+    if (!interviewId || startedAtMs.current === null) return;
+    setError(null);
+    const pausedAtMs = Date.now();
+
+    try {
+      await service.pause(interviewId);
+      capturedMs.current += pausedAtMs - startedAtMs.current;
+      startedAtMs.current = null;
+      setElapsedMs(capturedMs.current);
+      setState("PAUSED");
+    } catch {
+      setError("Recording could not be paused. It is still in progress.");
+    }
+  }, [interviewId, service]);
+
+  const resume = useCallback(async () => {
+    if (!interviewId) return;
+    setError(null);
+
+    try {
+      await service.resume(interviewId);
+      startedAtMs.current = Date.now();
+      setState("RECORDING");
+    } catch {
+      setError("Recording could not be resumed. Nothing has been changed.");
+    }
+  }, [interviewId, service]);
+
   const stop = useCallback(async (): Promise<Interview | null> => {
     if (!interviewId) return null;
     setError(null);
@@ -134,6 +166,8 @@ export function useRecordingSession(interviewId: string | undefined) {
       const recorded = await service.stop(interviewId);
       setInterview(recorded);
       startedAtMs.current = null;
+      capturedMs.current = recorded.metadata.recordingDurationMs ?? elapsedMs;
+      setElapsedMs(capturedMs.current);
       setState("READY");
       return recorded;
     } catch {
@@ -150,6 +184,8 @@ export function useRecordingSession(interviewId: string | undefined) {
     elapsedLabel: formatElapsed(elapsedMs),
     error,
     start,
+    pause,
+    resume,
     stop,
   };
 }
